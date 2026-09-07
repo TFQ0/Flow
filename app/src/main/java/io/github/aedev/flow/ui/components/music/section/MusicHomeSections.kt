@@ -41,20 +41,20 @@ import io.github.aedev.flow.innertube.pages.HomePage
 import io.github.aedev.flow.innertube.pages.MoodAndGenres
 import io.github.aedev.flow.ui.components.currentGridThumbnailHeight
 import io.github.aedev.flow.ui.components.music.card.MusicHeroCard
-import io.github.aedev.flow.ui.components.music.common.MusicChartRankBadge
-import io.github.aedev.flow.ui.components.music.common.MusicFilterChip
 import io.github.aedev.flow.ui.components.music.common.MusicMoodButton
 import io.github.aedev.flow.ui.components.music.common.MusicMoodTone
 import io.github.aedev.flow.ui.components.music.common.MusicThumbnail
-import io.github.aedev.flow.ui.components.music.common.musicArtistShape
-import io.github.aedev.flow.ui.components.music.common.musicGridCellWidth
-import io.github.aedev.flow.ui.components.music.common.musicGridColumns
-import io.github.aedev.flow.ui.components.music.common.musicLaneItemWidth
 import io.github.aedev.flow.ui.components.music.header.MusicSectionAction
 import io.github.aedev.flow.ui.components.music.header.MusicSectionHeader
 import io.github.aedev.flow.ui.components.music.item.MusicCollectionCard
 import io.github.aedev.flow.ui.components.music.item.MusicItemDensity
 import io.github.aedev.flow.ui.components.music.item.MusicTrackItem
+import io.github.aedev.flow.ui.components.shared.ChartRankBadge
+import io.github.aedev.flow.ui.components.shared.FlowFilterChip
+import io.github.aedev.flow.ui.components.shared.flowArtistShape
+import io.github.aedev.flow.ui.components.shared.flowGridCellWidth
+import io.github.aedev.flow.ui.components.shared.flowGridColumns
+import io.github.aedev.flow.ui.components.shared.flowLaneItemWidth
 import io.github.aedev.flow.ui.theme.Dimensions
 
 private val ArtistPortraitSize = 84.dp
@@ -79,7 +79,7 @@ enum class MusicLane {
  * and playlists inside track lanes, and tapping one must open the collection, not start playback.
  */
 val MusicTrack.isCollection: Boolean
-    get() = itemType == MusicItemType.ALBUM || itemType == MusicItemType.PLAYLIST
+    get() = itemType != MusicItemType.SONG
 
 /**
  * A lane of track cards. Handles the album/playlist routing that every track shelf needs, so the
@@ -108,6 +108,7 @@ fun MusicTrackCardShelf(
     when (lane) {
         MusicLane.Cards -> {
             val thumbnailHeight = currentGridThumbnailHeight()
+            val artistShape = flowArtistShape()
             MusicShelf(
                 title = title,
                 items = tracks,
@@ -117,11 +118,14 @@ fun MusicTrackCardShelf(
                 leading = leading,
                 action = action,
             ) { track ->
+                val isArtist = track.itemType == MusicItemType.ARTIST
                 MusicCollectionCard(
                     title = track.title,
                     subtitle = trackSubtitle(track),
                     thumbnailUrl = track.thumbnailUrl,
                     thumbnailHeight = thumbnailHeight,
+                    shape = if (isArtist) artistShape else MaterialTheme.shapes.large,
+                    horizontalAlignment = if (isArtist) Alignment.CenterHorizontally else Alignment.Start,
                     mediaId = track.videoId,
                     isDownloaded = downloadedTrackIds.contains(track.videoId),
                     onClick = { track.open(onTrackClick, onCollectionClick) },
@@ -211,7 +215,7 @@ fun <T> MusicArtistShelf(
     modifier: Modifier = Modifier,
     subtitle: @Composable (T) -> String? = { null },
 ) {
-    val artistShape = musicArtistShape()
+    val artistShape = flowArtistShape()
 
     MusicShelf(
         title = title,
@@ -242,17 +246,19 @@ fun MusicQuickPicksShelf(
     onTrackClick: (MusicTrack) -> Unit,
     onTrackMenu: (MusicTrack) -> Unit,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     action: MusicSectionAction? = null,
     downloadedTrackIds: Set<String> = emptySet(),
     state: LazyGridState = rememberLazyGridState(),
 ) {
-    val rowWidth = musicLaneItemWidth(maxWidth = QuickPickMaxWidth, peek = QuickPickPeek)
+    val rowWidth = flowLaneItemWidth(maxWidth = QuickPickMaxWidth, peek = QuickPickPeek)
 
     MusicTrackShelf(
         title = title,
         items = tracks,
         key = { "quick_picks:${it.videoId}" },
         modifier = modifier,
+        subtitle = subtitle,
         action = action,
         state = state,
     ) { track, shape ->
@@ -283,7 +289,7 @@ fun MusicChartsShelf(
     downloadedTrackIds: Set<String> = emptySet(),
 ) {
     val ranked = remember(tracks) { tracks.take(20).mapIndexed { index, track -> index + 1 to track } }
-    val rowWidth = musicLaneItemWidth(maxWidth = ChartMaxWidth, peek = ChartPeek)
+    val rowWidth = flowLaneItemWidth(maxWidth = ChartMaxWidth, peek = ChartPeek)
 
     MusicTrackShelf(
         title = title,
@@ -294,7 +300,7 @@ fun MusicChartsShelf(
         MusicTrackItem(
             track = track,
             density = MusicItemDensity.Compact,
-            leadingContent = { MusicChartRankBadge(rank) },
+            leadingContent = { ChartRankBadge(rank) },
             showMenu = false,
             shape = shape,
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -356,8 +362,8 @@ fun MusicMoodsShelf(
     if (moods.isEmpty()) return
 
     val moodItems = remember(moods) { moods.flatMap { it.items }.distinctBy { it.title } }
-    val columns = musicGridColumns(compact = 2, medium = 3, expanded = 4)
-    val buttonWidth = musicGridCellWidth(columns = columns)
+    val columns = flowGridColumns(compact = 2, medium = 3, expanded = 4)
+    val buttonWidth = flowGridCellWidth(columns = columns)
     val gridHeight = ButtonDefaults.MediumContainerHeight * MOOD_ROWS + Dimensions.ItemSpacing * (MOOD_ROWS - 1)
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -409,7 +415,7 @@ fun MusicHomeChipRow(
     ) {
         items(items = chips.distinctBy { it.title }, key = { it.title }) { chip ->
             val isSelected = selectedChipTitle == chip.title
-            MusicFilterChip(
+            FlowFilterChip(
                 label = chip.title,
                 selected = isSelected,
                 onClick = { onChipToggle(if (isSelected) null else chip) },
@@ -452,7 +458,7 @@ fun MusicSeedThumbnail(
     MusicThumbnail(
         thumbnailUrl = url,
         size = SeedThumbnailSize,
-        shape = if (isArtist) musicArtistShape() else MaterialTheme.shapes.small,
+        shape = if (isArtist) flowArtistShape() else MaterialTheme.shapes.small,
         modifier = modifier,
     )
 }
