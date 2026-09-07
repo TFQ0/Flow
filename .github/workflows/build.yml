@@ -75,7 +75,6 @@ jobs:
             echo "Release keystore secret is not available. Continuing with an unsigned CI build."
           fi
 
-      # Limit concurrent compiler work after Kotlin OOMs on the hosted runner.
       - name: Run unit tests
         run: >
           ./gradlew :app:testGithubDebugUnitTest :app:testFossDebugUnitTest
