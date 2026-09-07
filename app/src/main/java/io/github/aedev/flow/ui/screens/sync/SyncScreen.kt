@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -161,6 +162,7 @@ fun SyncScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(padding)
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -188,6 +190,7 @@ fun SyncScreen(
                         onSelectedChange = { selected = it },
                         onHost = { role -> viewModel.host(role, selected.toList()) },
                         onJoin = { role, qr -> viewModel.join(role, qr, selected.toList()) },
+                        onPrepareConnectionData = viewModel::extendPairingForManualShare,
                         onCancel = {
                             viewModel.cancel()
                             step = Step.CHOOSER
@@ -215,6 +218,7 @@ private fun SyncStepContent(
     onSelectedChange: (Set<String>) -> Unit,
     onHost: (SyncRole) -> Unit,
     onJoin: (SyncRole, String) -> Unit,
+    onPrepareConnectionData: () -> String?,
     onCancel: () -> Unit,
     onConfirmSas: (Boolean) -> Unit,
     onConfirmConsent: (Boolean) -> Unit,
@@ -242,7 +246,11 @@ private fun SyncStepContent(
         }
 
         is SyncState.ShowingQr -> {
-            SyncQrContent(state, onCancel = onCancel)
+            SyncQrContent(
+                s = state,
+                onPrepareConnectionData = onPrepareConnectionData,
+                onCancel = onCancel,
+            )
         }
 
         is SyncState.AwaitingSas -> {

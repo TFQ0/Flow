@@ -2000,6 +2000,7 @@
     <string name="sync_enter_connection_data">Enter connection data manually</string>
     <string name="sync_enter_connection_data_hint">Paste the connection data copied from the other device when scanning is not possible.</string>
     <string name="sync_connection_data_label">Connection data</string>
+    <string name="sync_paste_connection_data">Paste connection data</string>
     <string name="sync_connection_data_security_note">Connection data contains a temporary encryption key. Share it only with the device you want to sync.</string>
     <string name="sync_copy_connection_data">Copy connection data</string>
     <string name="sync_connect">Connect</string>
@@ -2010,7 +2011,6 @@
     <string name="sync_continue">Continue</string>
     <string name="sync_qr_scan_on_target_sending">Scan this on the device you\'re sending to</string>
     <string name="sync_qr_scan_on_target_receiving">Scan this on the device you\'re receiving from</string>
-    <string name="sync_confirmation_code">Confirmation code: %1$s</string>
     <string name="sync_expires_in">Expires in %1$ds</string>
     <string name="sync_qr_network_note">Both devices must be on the same Wi-Fi (or one device\'s hotspot). You may need to allow Flow through a firewall.</string>
     <string name="sync_qr_advertised_address">This device: %1$s</string>

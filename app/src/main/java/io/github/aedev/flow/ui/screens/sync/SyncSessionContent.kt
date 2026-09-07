@@ -1,10 +1,6 @@
 package io.github.aedev.flow.ui.screens.sync
 
-import android.content.ClipData
-import android.content.ClipDescription
-import android.content.ClipboardManager
 import android.os.Build
-import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,11 +31,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -49,18 +47,22 @@ import androidx.compose.ui.unit.sp
 import io.github.aedev.flow.R
 import io.github.aedev.flow.sync.SyncState
 import io.github.aedev.flow.sync.protocol.ApplyStats
-import io.github.aedev.flow.sync.qr.QrCodec
+import io.github.aedev.flow.utils.copyPlainText
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** The steps that run once a session is live: QR connection, verification, merge consent, outcome. */
 
 @Composable
 internal fun SyncQrContent(
     s: SyncState.ShowingQr,
+    onPrepareConnectionData: () -> String?,
     onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
-    var remaining by remember { mutableLongStateOf(QrCodec.DEFAULT_TTL_SECONDS) }
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    var remaining by remember { mutableLongStateOf(s.ttlSeconds) }
     LaunchedEffect(s.expiresAtEpochSeconds) {
         while (true) {
             remaining = (s.expiresAtEpochSeconds - System.currentTimeMillis() / 1000).coerceAtLeast(0)
@@ -115,7 +117,7 @@ internal fun SyncQrContent(
                 )
             }
             LinearProgressIndicator(
-                progress = { (remaining.toFloat() / QrCodec.DEFAULT_TTL_SECONDS).coerceIn(0f, 1f) },
+                progress = { (remaining.toFloat() / s.ttlSeconds).coerceIn(0f, 1f) },
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -142,19 +144,13 @@ internal fun SyncQrContent(
     SyncActionRow(
         confirmLabel = stringResource(R.string.sync_copy_connection_data),
         onConfirm = {
-            context.getSystemService(ClipboardManager::class.java)?.let { clipboard ->
-                val clip =
-                    ClipData
-                        .newPlainText(
-                            context.getString(R.string.sync_connection_data_label),
-                            s.qrText,
-                        ).apply {
-                            description.extras =
-                                PersistableBundle().apply {
-                                    putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
-                                }
-                        }
-                clipboard.setPrimaryClip(clip)
+            val connectionData = onPrepareConnectionData() ?: s.qrText
+            scope.launch {
+                clipboard.copyPlainText(
+                    label = context.getString(R.string.sync_connection_data_label),
+                    text = connectionData,
+                    sensitive = true,
+                )
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     Toast.makeText(context, R.string.toast_copied_to_clipboard, Toast.LENGTH_SHORT).show()
                 }

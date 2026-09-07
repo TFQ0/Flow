@@ -14,6 +14,7 @@ sealed interface SyncState {
     data class ShowingQr(
         val qrText: String,
         val expiresAtEpochSeconds: Long,
+        val ttlSeconds: Long,
         /** True when this device will send (peer receives); false when this device will receive. */
         val sending: Boolean,
         val address: String,
