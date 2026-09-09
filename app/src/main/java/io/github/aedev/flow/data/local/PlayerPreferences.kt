@@ -155,6 +155,7 @@ class PlayerPreferences(
         val SHOW_RELATED_VIDEOS = booleanPreferencesKey("show_related_videos")
         val DOUBLE_TAP_SEEK_SECONDS = intPreferencesKey("double_tap_seek_seconds")
         val HOME_VIEW_MODE = stringPreferencesKey("home_view_mode")
+        val HOME_FEED_COLUMNS = stringPreferencesKey("home_feed_columns")
         val HOME_FEED_ENABLED = booleanPreferencesKey("home_feed_enabled")
         val REFRESH_HOME_ON_RESELECT = booleanPreferencesKey("refresh_home_on_reselect")
         val RELATED_CARD_STYLE = stringPreferencesKey("related_card_style")
@@ -233,6 +234,7 @@ class PlayerPreferences(
         val SUBS_LAST_REFRESH_TIME = longPreferencesKey("subs_last_refresh_time")
         val SUBS_LAST_REFRESHED_COUNT = intPreferencesKey("subs_last_refreshed_count")
         val SUBS_SHOW_CHECKED_VIDEO_COUNT = booleanPreferencesKey("subs_show_checked_video_count")
+        val SHOW_CHANNEL_GROUP_BADGES = booleanPreferencesKey("show_channel_group_badges")
 
         // Donation / support prompt
         val DONATION_FIRST_LAUNCH_TIME = longPreferencesKey("donation_first_launch_time")
@@ -922,6 +924,20 @@ class PlayerPreferences(
     suspend fun setHomeViewMode(mode: HomeViewMode) {
         context.playerPreferencesDataStore.edit { preferences ->
             preferences[Keys.HOME_VIEW_MODE] = mode.name
+        }
+    }
+
+    val homeFeedColumns: Flow<HomeFeedColumns> =
+        context.playerPreferencesDataStore.data
+            .map { preferences ->
+                runCatching {
+                    HomeFeedColumns.valueOf(preferences[Keys.HOME_FEED_COLUMNS] ?: HomeFeedColumns.AUTO.name)
+                }.getOrDefault(HomeFeedColumns.AUTO)
+            }
+
+    suspend fun setHomeFeedColumns(columns: HomeFeedColumns) {
+        context.playerPreferencesDataStore.edit { preferences ->
+            preferences[Keys.HOME_FEED_COLUMNS] = columns.name
         }
     }
 
@@ -1747,6 +1763,16 @@ class PlayerPreferences(
     val subscriptionLastRefreshedCount: Flow<Int> =
         context.playerPreferencesDataStore.data
             .map { preferences -> preferences[Keys.SUBS_LAST_REFRESHED_COUNT] ?: 0 }
+
+    val showChannelGroupBadges: Flow<Boolean> =
+        context.playerPreferencesDataStore.data
+            .map { preferences -> preferences[Keys.SHOW_CHANNEL_GROUP_BADGES] ?: false }
+
+    suspend fun setShowChannelGroupBadges(enabled: Boolean) {
+        context.playerPreferencesDataStore.edit { preferences ->
+            preferences[Keys.SHOW_CHANNEL_GROUP_BADGES] = enabled
+        }
+    }
 
     val subscriptionShowCheckedVideoCount: Flow<Boolean> =
         context.playerPreferencesDataStore.data
@@ -3043,6 +3069,19 @@ internal fun resolveSeekbarHorizontalPaddingDp(
 enum class HomeViewMode {
     GRID,
     LIST,
+}
+
+/**
+ * How many cards the home grid puts on a row. [AUTO] keeps the responsive breakpoints; the rest
+ * pin a count regardless of screen width. Only meaningful in [HomeViewMode.GRID].
+ */
+enum class HomeFeedColumns(
+    val fixedCount: Int?,
+) {
+    AUTO(null),
+    ONE(1),
+    TWO(2),
+    THREE(3),
 }
 
 enum class PlayerRelatedCardStyle {
