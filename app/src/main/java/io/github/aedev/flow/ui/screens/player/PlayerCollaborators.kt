@@ -50,7 +50,9 @@ internal class PlayerCollaborators(
     networkDispatcher: CoroutineDispatcher,
     ioDispatcher: CoroutineDispatcher,
     isLoadCurrent: (Long) -> Boolean,
+    currentLoadToken: () -> Long,
     shortsEnabled: () -> Boolean,
+    blockedChannelIds: () -> Set<String>,
 ) {
     val comments =
         CommentsPager(
@@ -98,6 +100,7 @@ internal class PlayerCollaborators(
             currentState = { uiState.value },
             relatedVideosFor = ::relatedVideosFor,
             shortsEnabled = shortsEnabled,
+            blockedChannelIds = blockedChannelIds,
             isPlaybackCurrent = isLoadCurrent,
             onResult = { result -> sessionApplier.applySecondary(result) },
         )
@@ -138,6 +141,10 @@ internal class PlayerCollaborators(
             probe = upcomingPremiereProbe,
             scope = scope,
             isLoadCurrent = isLoadCurrent,
+            // A countdown the video's own metadata enters skips the load, so it arms what a load would.
+            armMetadata = { videoId, channelId ->
+                sessionApplier.armCountdownMetadata(LoadContext(videoId, currentLoadToken()), emptyList(), channelId)
+            },
         )
 
     val sessionApplier: PlaybackSessionApplier =

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AutoFixHigh
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
@@ -300,6 +301,7 @@ fun VideoCardHorizontal(
     video: Video,
     modifier: Modifier = Modifier,
     onChannelClick: ((String) -> Unit)? = null,
+    showChannelName: Boolean = true,
     onClick: () -> Unit,
 ) {
     val dateSettings = rememberDateDisplaySettings()
@@ -367,19 +369,21 @@ fun VideoCardHorizontal(
             )
 
             Column {
-                Text(
-                    text = displayChannelName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.extendedColors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier =
-                        if (onChannelClick != null) {
-                            Modifier.clickable { openChannelOrCollaborators() }
-                        } else {
-                            Modifier
-                        },
-                )
+                if (showChannelName) {
+                    Text(
+                        text = displayChannelName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.extendedColors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier =
+                            if (onChannelClick != null) {
+                                Modifier.clickable { openChannelOrCollaborators() }
+                            } else {
+                                Modifier
+                            },
+                    )
+                }
 
                 Text(
                     text =
@@ -419,6 +423,7 @@ fun VideoCardFullWidth(
     modifier: Modifier = Modifier,
     useInternalPadding: Boolean = true,
     showChannelAvatar: Boolean = true,
+    showChannelName: Boolean = true,
     onClick: () -> Unit,
     onChannelClick: ((String) -> Unit)? = null,
     onMoreClick: () -> Unit = {},
@@ -528,7 +533,7 @@ fun VideoCardFullWidth(
                             video = video,
                             isUpcoming = video.isUpcoming,
                             channelName = displayChannelName,
-                            includeChannel = true,
+                            includeChannel = showChannelName,
                         ),
                     style = MaterialTheme.typography.bodySmall,
                     color =
@@ -546,6 +551,8 @@ fun VideoCardFullWidth(
                             Modifier
                         },
                 )
+
+                MembersOnlyLabel(video)
             }
 
             // More options button
@@ -673,6 +680,9 @@ fun VideoCardFullWidth(
     )
 }
 
+/** The width every existing caller renders, so [thumbnailWidth] only ever widens it deliberately. */
+val CompactVideoCardThumbnailWidth = 168.dp
+
 /**
  * A horizontal Video Card optimized for side panes (tablets/foldables) or lists.
  * Image on Left, Info on Right.
@@ -684,6 +694,8 @@ fun CompactVideoCard(
     onClick: () -> Unit,
     onMoreClick: () -> Unit = {},
     onChannelClick: ((String) -> Unit)? = null,
+    showChannelName: Boolean = true,
+    thumbnailWidth: Dp = CompactVideoCardThumbnailWidth,
 ) {
     var showQuickActions by remember { mutableStateOf(false) }
     var showCollaborators by remember { mutableStateOf(false) }
@@ -726,7 +738,7 @@ fun CompactVideoCard(
         Box(
             modifier =
                 Modifier
-                    .width(168.dp)
+                    .width(thumbnailWidth)
                     .aspectRatio(16f / 9f)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
@@ -762,19 +774,21 @@ fun CompactVideoCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text(
-                text = displayChannelName,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.extendedColors.textSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier =
-                    if (onChannelClick != null) {
-                        Modifier.clickable { openChannelOrCollaborators() }
-                    } else {
-                        Modifier
-                    },
-            )
+            if (showChannelName) {
+                Text(
+                    text = displayChannelName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.extendedColors.textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier =
+                        if (onChannelClick != null) {
+                            Modifier.clickable { openChannelOrCollaborators() }
+                        } else {
+                            Modifier
+                        },
+                )
+            }
 
             Text(
                 text =
@@ -794,6 +808,8 @@ fun CompactVideoCard(
                 overflow = TextOverflow.Ellipsis,
                 fontSize = 11.sp,
             )
+
+            MembersOnlyLabel(video)
         }
 
         Column(
@@ -1226,6 +1242,33 @@ fun ChannelAvatarStack(
                             Modifier
                         },
                     ),
+        )
+    }
+}
+
+/**
+ * YouTube omits the view count on members-only uploads and shows this badge instead, so the row above
+ * it legitimately reads "2 days ago" with no views.
+ */
+@Composable
+private fun MembersOnlyLabel(video: Video) {
+    val label = video.membersOnlyText ?: return
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Star,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = MaterialTheme.extendedColors.success,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.extendedColors.success,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

@@ -124,8 +124,13 @@ class PlayerPreferences(
         val MUSIC_PLAYER_BACKGROUND_STYLE = stringPreferencesKey("music_player_background_style")
         val HIDE_MUSIC_PLAYER_ARTWORK = booleanPreferencesKey("hide_music_player_artwork")
         val SHORTS_PLAYER_UI_MODE = stringPreferencesKey("shorts_player_ui_mode")
+        val GESTURE_OVERLAY_STYLE = stringPreferencesKey("gesture_overlay_style")
+        val PLAYER_HAPTICS_ENABLED = booleanPreferencesKey("player_haptics_enabled")
         val GROUPED_QUALITY_SELECTOR_ENABLED = booleanPreferencesKey("grouped_quality_selector_enabled")
         val SHORTS_CONTENT_ENABLED = booleanPreferencesKey("shorts_content_enabled")
+        val NOTES_ENABLED = booleanPreferencesKey("notes_enabled")
+        val CHANNEL_NOTES_ENABLED = booleanPreferencesKey("channel_notes_enabled")
+        val VIDEO_NOTES_ENABLED = booleanPreferencesKey("video_notes_enabled")
         val SHORTS_SHELF_ENABLED = booleanPreferencesKey("shorts_shelf_enabled")
         val HOME_SHORTS_SHELF_ENABLED = booleanPreferencesKey("home_shorts_shelf_enabled")
         val HOME_NAVIGATION_ENABLED = booleanPreferencesKey("home_navigation_enabled")
@@ -209,7 +214,6 @@ class PlayerPreferences(
         val OVERLAY_COMMENTS_ENABLED = booleanPreferencesKey("overlay_comments_enabled")
 
         // Fullscreen Player
-        val SHOW_FULLSCREEN_TITLE = booleanPreferencesKey("show_fullscreen_title")
         val ADAPTIVE_PLAYER_SIZE_ENABLED = booleanPreferencesKey("adaptive_player_size_enabled")
         val PORTRAIT_SEEKBAR_PADDING_MODE = stringPreferencesKey("portrait_seekbar_padding_mode")
         val PORTRAIT_SEEKBAR_CUSTOM_PADDING_DP = intPreferencesKey("portrait_seekbar_custom_padding_dp")
@@ -600,7 +604,6 @@ class PlayerPreferences(
             speedIndicatorEnabled =
                 this[Keys.OVERLAY_SPEED_INDICATOR_ENABLED] ?: overlayDefaults.speedIndicatorEnabled,
             commentsEnabled = this[Keys.OVERLAY_COMMENTS_ENABLED] ?: overlayDefaults.commentsEnabled,
-            fullscreenTitleEnabled = this[Keys.SHOW_FULLSCREEN_TITLE] ?: overlayDefaults.fullscreenTitleEnabled,
             showControlsWhileLoading =
                 this[Keys.SHOW_CONTROLS_WHILE_LOADING] ?: overlayDefaults.showControlsWhileLoading,
             fullscreenSeekbarHorizontalPaddingDp =
@@ -734,6 +737,30 @@ class PlayerPreferences(
         }
     }
 
+    val gestureOverlayStyle: Flow<GestureOverlayStyle> =
+        context.playerPreferencesDataStore.data
+            .map { preferences ->
+                preferences[Keys.GESTURE_OVERLAY_STYLE]
+                    ?.let { stored -> runCatching { GestureOverlayStyle.valueOf(stored) }.getOrNull() }
+                    ?: GestureOverlayStyle.CIRCULAR
+            }
+
+    val playerHapticsEnabled: Flow<Boolean> =
+        context.playerPreferencesDataStore.data
+            .map { preferences -> preferences[Keys.PLAYER_HAPTICS_ENABLED] ?: true }
+
+    suspend fun setPlayerHapticsEnabled(enabled: Boolean) {
+        context.playerPreferencesDataStore.edit { preferences ->
+            preferences[Keys.PLAYER_HAPTICS_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setGestureOverlayStyle(style: GestureOverlayStyle) {
+        context.playerPreferencesDataStore.edit { preferences ->
+            preferences[Keys.GESTURE_OVERLAY_STYLE] = style.name
+        }
+    }
+
     val groupedQualitySelectorEnabled: Flow<Boolean> =
         context.playerPreferencesDataStore.data
             .map { preferences ->
@@ -745,6 +772,38 @@ class PlayerPreferences(
             preferences[Keys.GROUPED_QUALITY_SELECTOR_ENABLED] = enabled
         }
     }
+
+    // The notes master switch. The two surface switches below are ANDed with it, so turning this off
+    // hides both without clearing either of their own settings.
+    val notesEnabled: Flow<Boolean> =
+        context.playerPreferencesDataStore.data
+            .map { preferences -> preferences[Keys.NOTES_ENABLED] ?: true }
+
+    suspend fun setNotesEnabled(enabled: Boolean) {
+        context.playerPreferencesDataStore.edit { preferences -> preferences[Keys.NOTES_ENABLED] = enabled }
+    }
+
+    val channelNotesEnabled: Flow<Boolean> =
+        context.playerPreferencesDataStore.data
+            .map { preferences -> preferences[Keys.CHANNEL_NOTES_ENABLED] ?: true }
+
+    suspend fun setChannelNotesEnabled(enabled: Boolean) {
+        context.playerPreferencesDataStore.edit { preferences -> preferences[Keys.CHANNEL_NOTES_ENABLED] = enabled }
+    }
+
+    val videoNotesEnabled: Flow<Boolean> =
+        context.playerPreferencesDataStore.data
+            .map { preferences -> preferences[Keys.VIDEO_NOTES_ENABLED] ?: true }
+
+    suspend fun setVideoNotesEnabled(enabled: Boolean) {
+        context.playerPreferencesDataStore.edit { preferences -> preferences[Keys.VIDEO_NOTES_ENABLED] = enabled }
+    }
+
+    val effectiveChannelNotesEnabled: Flow<Boolean> =
+        combine(notesEnabled, channelNotesEnabled) { master, own -> master && own }
+
+    val effectiveVideoNotesEnabled: Flow<Boolean> =
+        combine(notesEnabled, videoNotesEnabled) { master, own -> master && own }
 
     /**
      * Master switch for Shorts (reels) as content. When OFF the app hides every reel surface and the
@@ -1445,16 +1504,6 @@ class PlayerPreferences(
     suspend fun setOverlaySpeedIndicatorEnabled(enabled: Boolean) {
         context.playerPreferencesDataStore.edit { preferences ->
             preferences[Keys.OVERLAY_SPEED_INDICATOR_ENABLED] = enabled
-        }
-    }
-
-    //  FULLSCREEN PLAYER PREFERENCES
-    val showFullscreenTitle: Flow<Boolean> =
-        overlayPreferences.map { it.fullscreenTitleEnabled }.distinctUntilChanged()
-
-    suspend fun setShowFullscreenTitle(enabled: Boolean) {
-        context.playerPreferencesDataStore.edit { preferences ->
-            preferences[Keys.SHOW_FULLSCREEN_TITLE] = enabled
         }
     }
 
@@ -3023,6 +3072,14 @@ enum class MusicPlayerBackgroundStyle {
     GRADIENT,
     IMMERSIVE,
     DEFAULT,
+}
+
+/** How the volume and brightness read-outs are drawn mid-gesture. */
+enum class GestureOverlayStyle {
+    CIRCULAR,
+    VERTICAL,
+    HORIZONTAL,
+    MINIMAL,
 }
 
 enum class ShortsPlayerUiMode {

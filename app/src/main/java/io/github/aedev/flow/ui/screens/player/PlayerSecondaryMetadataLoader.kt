@@ -77,6 +77,7 @@ internal class PlayerSecondaryMetadataLoader(
     private val currentState: () -> VideoPlayerUiState,
     private val relatedVideosFor: (String) -> List<Video>,
     private val shortsEnabled: () -> Boolean,
+    private val blockedChannelIds: () -> Set<String>,
     private val isPlaybackCurrent: (Long) -> Boolean,
     private val onResult: (SecondaryMetadata) -> Unit,
 ) {
@@ -138,6 +139,7 @@ internal class PlayerSecondaryMetadataLoader(
         channelId: String?,
         embeddedAvatarUrls: List<String>,
         loadToken: Long,
+        awaitPlayback: Boolean = true,
     ) {
         val embeddedAvatar =
             embeddedAvatarUrls
@@ -164,7 +166,7 @@ internal class PlayerSecondaryMetadataLoader(
             scope.launch(networkDispatcher) {
                 // Embedded avatars can update immediately, but the extra channel request waits until
                 // playback has actually started so it cannot compete with the first media buffer.
-                awaitPlaybackStarted(videoId)
+                if (awaitPlayback) awaitPlaybackStarted(videoId)
                 if (!isPlaybackCurrent(loadToken)) return@launch
 
                 var channelInfo: org.schabi.newpipe.extractor.channel.ChannelInfo? = null
@@ -201,6 +203,7 @@ internal class PlayerSecondaryMetadataLoader(
         videoId: String,
         primaryCandidates: List<Video>,
         loadToken: Long,
+        awaitPlayback: Boolean = true,
     ) {
         val selected =
             PlayerRelatedVideosPolicy.select(
@@ -209,6 +212,7 @@ internal class PlayerSecondaryMetadataLoader(
                 fallback = playerManager.relatedCandidatesFor(videoId),
                 current = relatedVideosFor(videoId),
                 shortsEnabled = shortsEnabled(),
+                blockedChannelIds = blockedChannelIds(),
             )
         if (selected.isNotEmpty()) {
             relatedLoad.takeOver(videoId, loadToken)
@@ -222,7 +226,7 @@ internal class PlayerSecondaryMetadataLoader(
             scope.launch(networkDispatcher) {
                 // Keep this request off the critical startup path. It is only needed when the
                 // playback resolver did not provide related items with its initial metadata.
-                awaitPlaybackStarted(videoId)
+                if (awaitPlayback) awaitPlaybackStarted(videoId)
                 if (!isPlaybackCurrent(loadToken) || !relatedLoad.holds(videoId, loadToken)) return@launch
 
                 val managerCandidates = playerManager.relatedCandidatesFor(videoId)
@@ -244,6 +248,7 @@ internal class PlayerSecondaryMetadataLoader(
                         fallback = fallbackCandidates,
                         current = currentState().relatedVideos,
                         shortsEnabled = shortsEnabled(),
+                        blockedChannelIds = blockedChannelIds(),
                     )
                 if (resolved.isNotEmpty()) {
                     publish(videoId, resolved, loadToken)
@@ -285,6 +290,7 @@ internal class PlayerSecondaryMetadataLoader(
                         fallback = emptyList(),
                         current = emptyList(),
                         shortsEnabled = shortsEnabled(),
+                        blockedChannelIds = blockedChannelIds(),
                     )
                 val cached = currentState().cachedVideo ?: return@launch
                 if (cached.id != videoId) return@launch
@@ -379,6 +385,7 @@ internal class PlayerSecondaryMetadataLoader(
                                 ?: innerTubeMeta?.relatedVideos
                                 ?: meta.relatedVideos,
                         shortsEnabled = shortsEnabled(),
+                        blockedChannelIds = blockedChannelIds(),
                     )
                 val related =
                     metadataRelated.ifEmpty {
