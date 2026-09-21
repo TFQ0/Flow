@@ -2684,4 +2684,36 @@
         <item quantity="many">%1$d jours</item>
         <item quantity="other">%1$d jours</item>
     </plurals>
+    <string name="import_label_newpipe_subscriptions">Abonnements à NewPipe</string>
+    <string name="import_label_youtube_subscriptions">Abonnements YouTube</string>
+    <string name="import_label_youtube_watch_history">Historique de visionnage YouTube</string>
+    <string name="import_label_freetube_watch_history">Historique de visionnage sur FreeTube</string>
+    <plurals name="import_yt_playlist_success_template">
+        <item quantity="one">Playlist « %1$s » importée, contenant %2$d vidéos</item>
+        <item quantity="many">Playlists « %1$s » importées, contenant %2$d vidéos</item>
+        <item quantity="other">Playlists « %1$s » importées, contenant %2$d vidéos</item>
+    </plurals>
+    <string name="transcript_resync">Synchroniser avec la vidéo</string>
+    <string name="transcript_language">Langue</string>
+    <string name="note_title">Remarque</string>
+    <string name="sync_collection_notes">Remarques</string>
+    <string name="note_edit">Note de l\'éditeur</string>
+    <string name="content_settings_notes_subtitle">Conserver des notes privées sur les chaînes et les vidéos</string>
+    <string name="content_settings_channel_notes_title">Notes sur la chaîne</string>
+    <string name="content_settings_channel_notes_subtitle">Afficher une note sur la page de la chaîne</string>
+    <string name="content_settings_video_notes_title">Notes sur la vidéo</string>
+    <string name="content_settings_video_notes_subtitle">Afficher une note dans la description de la vidéo</string>
+    <string name="channel_about_more_info">Plus d\'informations</string>
+    <string name="channel_post_image_count">%1$d / %2$d</string>
+    <string name="channel_post_poll_votes">%1$s</string>
+    <string name="player_background_style_immersive">Illustration immersive</string>
+    <string name="player_appearance_haptics_title">Vibration</string>
+    <string name="player_appearance_haptics_subtitle">De légers cliquetis lorsque vous utilisez les commandes du lecteur et effectuez des gestes</string>
+    <string name="player_appearance_gesture_overlay_title">Style de superposition des gestes</string>
+    <string name="player_appearance_scrub_preview_title">Aperçu du nettoyage</string>
+    <string name="player_appearance_scrub_preview_subtitle">Ce que la barre de défilement affiche lorsque vous la faites glisser</string>
+    <string name="player_appearance_scrub_preview_strip">Diabande</string>
+    <string name="player_appearance_scrub_preview_frame">Image unique</string>
+    <string name="player_appearance_frame_step_title">Boutons de passage d\'image</string>
+    <string name="player_appearance_frame_step_subtitle">Afficher les flèches « Retour » et « Suivant » lorsque la lecture est en pause</string>
 </resources>

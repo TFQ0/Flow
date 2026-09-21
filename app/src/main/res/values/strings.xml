@@ -7,7 +7,6 @@
     <string name="subscriptions_sort_name">Name (A–Z)</string>
     <string name="subscriptions_sort_recent">Recently updated</string>
     <string name="top_bar_subscriptions_title">Subscriptions</string>
-    <string name="top_bar_clear_search">Clear search</string>
     <string name="top_bar_close_search">Close search</string>
     <string name="view_all_button_label">All</string>
     <string name="subscribed">Subscribed</string>
@@ -369,6 +368,8 @@
     <string name="transcript_unavailable">No transcript is available for this video</string>
     <string name="transcript_search_hint">Search transcript</string>
     <string name="transcript_no_matches">No lines match your search</string>
+    <string name="transcript_resync">Sync to video</string>
+    <string name="transcript_language">Language</string>
     <string name="channel_links">Links</string>
     <string name="artist">Artist</string>
     <string name="playlist">Playlist</string>
@@ -815,6 +816,12 @@
     <string name="player_fullscreen_seekbar_width_default">Default</string>
     <string name="player_fullscreen_seekbar_width_custom">Custom</string>
     <string name="player_fullscreen_seekbar_width_value">%1$d dp</string>
+    <string name="player_appearance_scrub_preview_title">Scrub Preview</string>
+    <string name="player_appearance_scrub_preview_subtitle">What the seekbar shows while you drag it</string>
+    <string name="player_appearance_scrub_preview_strip">Filmstrip</string>
+    <string name="player_appearance_scrub_preview_frame">Single frame</string>
+    <string name="player_appearance_frame_step_title">Frame Step Buttons</string>
+    <string name="player_appearance_frame_step_subtitle">Show step-back and step-forward arrows while paused</string>
     <!-- Lyrics Provider -->
     <string name="lyrics_provider_title">Lyrics Provider</string>
     <string name="lyrics_provider_subtitle">Choose your preferred source for song lyrics</string>
@@ -959,8 +966,6 @@
     <string name="content_settings_disable_shorts_player_subtitle">Play all videos (including YouTube Shorts) in the regular video player</string>
     <string name="content_settings_shorts_player_prompt_title">Shorts player suggestion</string>
     <string name="content_settings_shorts_player_prompt_subtitle">Ask before switching videos under 2 minutes to the Shorts player</string>
-    <string name="content_settings_explore_region_picker_title">Quick region picker in Explore</string>
-    <string name="content_settings_explore_region_picker_subtitle">Show a globe icon in the Explore screen top bar to instantly change the trending region.</string>
     <string name="categories_region_picker_desc">Change trending region (current: %1$s)</string>
     <string name="content_settings_header_nav_tabs">Navigation Tabs</string>
     <string name="settings_home_nav_tab_title">Home tab</string>
@@ -999,10 +1004,14 @@
     <string name="categories_title">Categories</string>
     <string name="categories_switch_to_grid">Switch to grid view</string>
     <string name="categories_switch_to_list">Switch to list view</string>
-    <string name="category_all">All</string>
-    <string name="category_trending">Trending</string>
     <string name="category_movies">Movies</string>
     <string name="category_live">Live</string>
+    <string name="category_news">News</string>
+    <string name="category_sports">Sports</string>
+    <string name="category_learning">Learning</string>
+    <string name="category_fashion">Fashion</string>
+    <string name="categories_shelf_see_all">See all</string>
+    <string name="categories_shelf_back">Back to all shelves</string>
     <string name="settings_continue_watching_title">Continue Watching shelf</string>
     <string name="settings_continue_watching_subtitle">Show a shelf of in-progress videos on the home screen.</string>
     <string name="continue_watching_title">Continue Watching</string>
@@ -1918,6 +1927,8 @@
     <string name="btn_minimize">Minimize</string>
     <string name="captions">Captions</string>
     <string name="pip_mode">Picture-in-Picture</string>
+    <string name="previous_frame">Previous frame</string>
+    <string name="next_frame">Next frame</string>
     <string name="previous_video">Previous Video</string>
     <string name="next_video">Next Video</string>
     <string name="fullscreen">Fullscreen</string>
@@ -2702,6 +2713,7 @@
     <string name="audio_track_original">Original</string>
     <string name="audio_track_dubbed">Dubbed</string>
     <string name="subtitle_load_failed">Couldn’t load %1$s subtitles — try again</string>
+    <string name="subtitle_translation_unavailable">Translation unavailable — showing %1$s</string>
     <string name="ui_skipped_segment">Skipped %1$s</string>
     <string name="ui_started_download">Started download: %1$s</string>
     <string name="ui_download_start_failed">Download failed to start: %1$s</string>
